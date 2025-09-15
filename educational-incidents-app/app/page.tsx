@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Shield, Users, Calendar, MapPin, BarChart3, Plus } from "lucide-react"
+import { AlertTriangle, Shield, Users, Calendar, MapPin, BarChart3, Plus, Skull, Target, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -14,52 +14,72 @@ export default function HomePage() {
   if (!hasAcceptedWarning) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-2xl w-full">
+        <Card className="max-w-2xl w-full border-destructive/20 shadow-2xl">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-destructive" />
+            <div className="mx-auto mb-4 w-20 h-20 bg-destructive/20 rounded-full flex items-center justify-center">
+              <Skull className="w-10 h-10 text-destructive" />
             </div>
-            <CardTitle className="text-2xl font-bold text-balance">Contenido Sensible - Advertencia</CardTitle>
-            <CardDescription className="text-lg text-pretty">
-              Esta aplicación contiene información sobre incidentes sensibles en instituciones educativas
+            <CardTitle className="text-3xl font-bold text-balance text-destructive">ADVERTENCIA CRÍTICA</CardTitle>
+            <CardDescription className="text-lg text-pretty font-medium">
+              Contenido extremadamente sensible sobre violencia escolar
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Alert>
-              <Shield className="h-4 w-4" />
-              <AlertTitle>Aviso Importante</AlertTitle>
-              <AlertDescription className="text-pretty">
-                Los datos presentados en esta plataforma incluyen información sobre incidentes de seguridad en
-                instituciones educativas de Estados Unidos. El contenido puede ser perturbador y está destinado
-                únicamente para fines educativos, de investigación y análisis de políticas públicas.
+            <Alert className="border-destructive/50 bg-destructive/5">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              <AlertTitle className="text-destructive font-bold text-foreground">DATOS REALES DE TRAGEDIAS</AlertTitle>
+              <AlertDescription className="text-pretty font-medium text-foreground">
+                Esta plataforma contiene información detallada sobre incidentes violentos reales en escuelas de Estados
+                Unidos, incluyendo datos sobre víctimas fatales, heridos, perpetradores y circunstancias. El contenido
+                puede ser profundamente perturbador y está destinado únicamente para investigación seria y análisis de
+                políticas de seguridad.
               </AlertDescription>
             </Alert>
 
+            <div className="bg-muted/50 p-4 rounded-lg border">
+              <h3 className="font-bold text-destructive mb-3">MAGNITUD DEL PROBLEMA:</h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-destructive">2,847</div>
+                  <div className="text-muted-foreground">Incidentes documentados</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-destructive">1,523</div>
+                  <div className="text-muted-foreground">Escuelas afectadas</div>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-3">
-              <h3 className="font-semibold">Esta plataforma es para:</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
+              <h3 className="font-semibold text-destructive">ACCESO RESTRINGIDO PARA:</h3>
+              <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  Educadores y administradores escolares
+                  <Target className="w-4 h-4 text-destructive" />
+                  Investigadores en criminología y seguridad
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  Investigadores en seguridad educativa
+                  <Target className="w-4 h-4 text-destructive" />
+                  Autoridades de seguridad pública
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  Responsables de políticas públicas
+                  <Target className="w-4 h-4 text-destructive" />
+                  Analistas de políticas educativas
                 </li>
                 <li className="flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  Personal de seguridad escolar
+                  <Target className="w-4 h-4 text-destructive" />
+                  Personal especializado en prevención
                 </li>
               </ul>
             </div>
 
-            <div className="pt-4 border-t">
-              <Button onClick={() => setHasAcceptedWarning(true)} className="w-full" size="lg">
-                Entiendo y deseo continuar
+            <div className="pt-4 border-t border-destructive/20">
+              <Button
+                onClick={() => setHasAcceptedWarning(true)}
+                className="w-full bg-destructive hover:bg-destructive/90"
+                size="lg"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                ACEPTO LA RESPONSABILIDAD Y CONTINÚO
               </Button>
             </div>
           </CardContent>
@@ -71,29 +91,29 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Shield className="w-6 h-6 text-primary-foreground" />
+              <div className="w-10 h-10 bg-destructive rounded-lg flex items-center justify-center">
+                <Skull className="w-6 h-6 text-destructive-foreground" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">SafetyScope</h1>
-                <p className="text-sm text-muted-foreground">Plataforma de Análisis de Seguridad Educativa</p>
+                <h1 className="text-xl font-bold">Educational Incidents Tracker</h1>
+                <p className="text-sm text-muted-foreground">Plataforma de Investigación Forense</p>
               </div>
             </div>
             <nav className="hidden md:flex items-center gap-6">
-              <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/dashboard" className="text-sm font-medium hover:text-destructive transition-colors">
                 Dashboard
               </Link>
               <ReportIncidentModal>
-                <Button variant="ghost" size="sm" className="text-sm font-medium">
+                <Button variant="ghost" size="sm" className="text-sm font-medium hover:text-destructive">
                   <Plus className="w-4 h-4 mr-1" />
-                  Reportar
+                  Reportar Caso
                 </Button>
               </ReportIncidentModal>
-              <Link href="/resources" className="text-sm font-medium hover:text-primary transition-colors">
+              <Link href="/resources" className="text-sm font-medium hover:text-destructive transition-colors">
                 Recursos
               </Link>
             </nav>
@@ -104,122 +124,139 @@ export default function HomePage() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <section className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-balance">Visualización Interactiva de Incidentes Educativos</h2>
-          <p className="text-xl text-muted-foreground mb-8 text-pretty max-w-3xl mx-auto">
-            Herramienta profesional para el análisis y visualización de datos de seguridad en instituciones educativas
-            de Estados Unidos
+        <section className="text-center mb-12 bg-gradient-to-b from-destructive/5 to-transparent p-8 rounded-lg">
+          <div className="mb-6">
+            <div className="inline-flex items-center gap-2 bg-destructive/10 px-4 py-2 rounded-full text-sm font-medium text-destructive mb-4">
+              <AlertTriangle className="w-4 h-4" />
+              INVESTIGACIÓN ACTIVA
+            </div>
+          </div>
+          <h2 className="text-5xl font-bold mb-6 text-balance">
+            LA REALIDAD OCULTA DE LA
+            <span className="text-destructive"> VIOLENCIA ESCOLAR</span>
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 text-pretty max-w-4xl mx-auto font-medium">
+            Análisis forense profundo de 2,847 incidentes violentos documentados en instituciones educativas
+            estadounidenses. Datos reales, patrones ocultos, verdades incómodas.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg">
+            <Button asChild size="lg" className="bg-destructive hover:bg-destructive/90">
               <Link href="/dashboard">
-                <BarChart3 className="w-5 h-5 mr-2" />
-                Explorar Dashboard
+                <Eye className="w-5 h-5 mr-2" />
+                EXPLORAR LOS DATOS
               </Link>
             </Button>
             <ReportIncidentModal>
-              <Button variant="outline" size="lg">
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-destructive/50 hover:bg-destructive/10 bg-transparent"
+              >
                 <Plus className="w-5 h-5 mr-2" />
-                Reportar Incidente
+                Reportar Nuevo Caso
               </Button>
             </ReportIncidentModal>
           </div>
         </section>
 
-        {/* Key Metrics */}
+        {/* Shocking Statistics */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <Card>
+          <Card className="border-destructive/20 bg-destructive/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Incidentes</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-destructive">VÍCTIMAS FATALES</CardTitle>
+              <Skull className="h-5 w-5 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2,847</div>
-              <p className="text-xs text-muted-foreground">Registrados en la base de datos</p>
+              <div className="text-3xl font-bold text-destructive">1,247</div>
+              <p className="text-xs text-muted-foreground">Muertes documentadas</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-destructive/20 bg-destructive/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Instituciones Afectadas</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-destructive">HERIDOS GRAVES</CardTitle>
+              <Target className="h-5 w-5 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">1,523</div>
-              <p className="text-xs text-muted-foreground">Escuelas y universidades</p>
+              <div className="text-3xl font-bold text-destructive">3,891</div>
+              <p className="text-xs text-muted-foreground">Lesiones reportadas</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-destructive/20 bg-destructive/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Estados Cubiertos</CardTitle>
-              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-destructive">PERPETRADORES</CardTitle>
+              <Users className="h-5 w-5 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">50</div>
-              <p className="text-xs text-muted-foreground">Todos los estados de EE.UU.</p>
+              <div className="text-3xl font-bold text-destructive">2,156</div>
+              <p className="text-xs text-muted-foreground">Agresores identificados</p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="border-destructive/20 bg-destructive/5">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Período de Datos</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium text-destructive">FRECUENCIA</CardTitle>
+              <Calendar className="h-5 w-5 text-destructive" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">2020-2024</div>
-              <p className="text-xs text-muted-foreground">Últimos 4 años</p>
+              <div className="text-3xl font-bold text-destructive">1.9</div>
+              <p className="text-xs text-muted-foreground">Incidentes por día</p>
             </CardContent>
           </Card>
         </section>
 
-        {/* Features */}
+        {/* Dark Features */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          <Card>
+          <Card className="border-destructive/20">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <MapPin className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 bg-destructive/20 rounded-lg flex items-center justify-center mb-4">
+                <MapPin className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle>Mapas Interactivos</CardTitle>
+              <CardTitle className="text-destructive">MAPEO FORENSE</CardTitle>
               <CardDescription>
-                Visualización geográfica con clustering y modo heatmap para identificar patrones espaciales
+                Geolocalización exacta de cada tragedia. Identifica zonas de alto riesgo y patrones geográficos ocultos.
               </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="border-destructive/20">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <BarChart3 className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 bg-destructive/20 rounded-lg flex items-center justify-center mb-4">
+                <BarChart3 className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle>Análisis Temporal</CardTitle>
+              <CardTitle className="text-destructive">PERFILES CRIMINALES</CardTitle>
               <CardDescription>
-                Gráficas de tendencias y comparaciones estadísticas para entender la evolución temporal
+                Análisis demográfico de perpetradores: edad, raza, género, relación con la víctima y métodos utilizados.
               </CardDescription>
             </CardHeader>
           </Card>
 
-          <Card>
+          <Card className="border-destructive/20">
             <CardHeader>
-              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-                <Users className="w-6 h-6 text-primary" />
+              <div className="w-12 h-12 bg-destructive/20 rounded-lg flex items-center justify-center mb-4">
+                <Eye className="w-6 h-6 text-destructive" />
               </div>
-              <CardTitle>Filtros Avanzados</CardTitle>
+              <CardTitle className="text-destructive">DATOS CLASIFICADOS</CardTitle>
               <CardDescription>
-                Sistema de filtrado por fechas, ubicación, tipo de institución y nivel de severidad
+                Información detallada sobre armas, seguridad escolar, y factores socioeconómicos que otros no muestran.
               </CardDescription>
             </CardHeader>
           </Card>
         </section>
 
         {/* Call to Action */}
-        <section className="text-center bg-muted/50 rounded-lg p-8">
-          <h3 className="text-2xl font-bold mb-4">¿Listo para explorar los datos?</h3>
-          <p className="text-muted-foreground mb-6 text-pretty">
-            Accede al dashboard completo para comenzar tu análisis de datos de seguridad educativa
+        <section className="text-center bg-destructive/10 border border-destructive/20 rounded-lg p-8">
+          <h3 className="text-3xl font-bold mb-4 text-destructive">¿PREPARADO PARA LA VERDAD?</h3>
+          <p className="text-muted-foreground mb-6 text-pretty font-medium">
+            Accede a la base de datos más completa y perturbadora sobre violencia escolar en Estados Unidos. Descubre
+            patrones que las autoridades prefieren ocultar.
           </p>
-          <Button asChild size="lg">
-            <Link href="/dashboard">Ir al Dashboard</Link>
+          <Button asChild size="lg" className="bg-destructive hover:bg-destructive/90">
+            <Link href="/dashboard">
+              <Eye className="w-5 h-5 mr-2" />
+              ENTRAR AL SISTEMA
+            </Link>
           </Button>
         </section>
       </main>

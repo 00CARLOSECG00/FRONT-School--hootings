@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import type { IncidentData } from "@/app/dashboard/page"
+import type { IncidentData } from "@/lib/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -65,10 +65,18 @@ export function StateComparison({ incidents }: StateComparisonProps) {
         {} as Record<string, number>,
       )
 
+      const totalKilled = stateIncidents.reduce((sum, i) => sum + (i.csvData?.killed || 0), 0)
+      const totalInjured = stateIncidents.reduce((sum, i) => sum + (i.csvData?.injured || 0), 0)
+      const withResourceOfficer = stateIncidents.filter((i) => i.csvData?.resource_officer).length
+
       return {
         state,
         totalIncidents: stateIncidents.length,
         totalAffected: stateIncidents.reduce((sum, i) => sum + i.affectedCount, 0),
+        totalKilled,
+        totalInjured,
+        withResourceOfficer,
+        resourceOfficerRate: stateIncidents.length > 0 ? (withResourceOfficer / stateIncidents.length) * 100 : 0,
         averageAffected:
           stateIncidents.length > 0
             ? Math.round(stateIncidents.reduce((sum, i) => sum + i.affectedCount, 0) / stateIncidents.length)
@@ -335,10 +343,27 @@ export function StateComparison({ incidents }: StateComparisonProps) {
                           <div className="font-semibold">{state.averageAffected}</div>
                         </div>
                       </div>
-                      <div className="flex gap-1">
+                      {(state.totalKilled > 0 || state.totalInjured > 0) && (
+                        <div className="grid grid-cols-2 gap-2 text-sm pt-2 border-t">
+                          <div>
+                            <div className="text-xs text-muted-foreground">Fallecidos</div>
+                            <div className="font-semibold text-red-700">{state.totalKilled}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-muted-foreground">Heridos</div>
+                            <div className="font-semibold text-orange-600">{state.totalInjured}</div>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex flex-col gap-1">
                         <Badge variant="destructive" className="text-xs">
                           {state.criticalRate.toFixed(1)}% críticos
                         </Badge>
+                        {state.resourceOfficerRate > 0 && (
+                          <Badge variant="secondary" className="text-xs">
+                            {state.resourceOfficerRate.toFixed(1)}% con oficial
+                          </Badge>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

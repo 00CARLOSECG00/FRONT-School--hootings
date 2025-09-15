@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useRef, useState } from "react"
-import type { IncidentData } from "@/app/dashboard/page"
+import type { IncidentData } from "@/lib/types"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { MapPin, Users, Calendar } from "lucide-react"

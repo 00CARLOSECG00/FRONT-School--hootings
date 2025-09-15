@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { IncidentData } from "@/app/dashboard/page"
+import type { IncidentData } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -231,7 +231,18 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
                   checked={filters.institutionTypes.includes(type)}
                   onCheckedChange={() => handleInstitutionTypeToggle(type)}
                 />
-                <Label htmlFor={`type-${type}`} className="text-sm font-normal">
+                <Label htmlFor={`type-${type}`} className="text-sm font-normal flex items-center gap-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      type === "elementary"
+                        ? "bg-green-500"
+                        : type === "middle"
+                          ? "bg-yellow-500"
+                          : type === "high"
+                            ? "bg-orange-500"
+                            : "bg-red-500"
+                    }`}
+                  />
                   {getInstitutionTypeLabel(type)}
                 </Label>
               </div>

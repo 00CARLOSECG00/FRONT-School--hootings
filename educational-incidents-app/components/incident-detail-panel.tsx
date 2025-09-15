@@ -1,11 +1,11 @@
 "use client"
 
-import type { IncidentData } from "@/app/dashboard/page"
+import type { IncidentData } from "@/lib/types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { X, MapPin, Calendar, Users, School, AlertTriangle, ExternalLink } from "lucide-react"
+import { X, MapPin, Calendar, Users, School, AlertTriangle, ExternalLink, Shield, Target } from "lucide-react"
 
 interface IncidentDetailPanelProps {
   incident: IncidentData
@@ -48,6 +48,8 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
     return labels[type as keyof typeof labels] || type
   }
 
+  const csvData = incident.csvData
+
   return (
     <div className="h-full flex flex-col bg-card">
       {/* Header */}
@@ -75,7 +77,15 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
             </div>
             <div className="flex items-center gap-2 text-sm">
               <Badge variant="outline">{getInstitutionTypeLabel(incident.institutionType)}</Badge>
+              {csvData?.enrollment && (
+                <Badge variant="secondary">{csvData.enrollment.toLocaleString()} estudiantes</Badge>
+              )}
             </div>
+            {csvData?.low_grade && csvData?.high_grade && (
+              <div className="text-sm text-muted-foreground">
+                Grados: {csvData.low_grade} - {csvData.high_grade}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -96,6 +106,12 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
                     day: "numeric",
                   })}
                 </div>
+                {csvData?.day_of_week && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {csvData.day_of_week}
+                    {csvData.time && ` - ${csvData.time}`}
+                  </div>
+                )}
               </div>
               <div>
                 <div className="text-xs text-muted-foreground mb-1">Personas Afectadas</div>
@@ -103,6 +119,13 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
                   <Users className="w-4 h-4" />
                   {incident.affectedCount}
                 </div>
+                {csvData && (csvData.killed > 0 || csvData.injured > 0) && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {csvData.killed > 0 && `${csvData.killed} fallecidos`}
+                    {csvData.killed > 0 && csvData.injured > 0 && ", "}
+                    {csvData.injured > 0 && `${csvData.injured} heridos`}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -116,6 +139,19 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
               </div>
             </div>
 
+            {csvData?.shooting_type && (
+              <>
+                <Separator />
+                <div>
+                  <div className="text-xs text-muted-foreground mb-2">Tipo de Incidente</div>
+                  <div className="flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    <span className="text-sm">{csvData.shooting_type}</span>
+                  </div>
+                </div>
+              </>
+            )}
+
             {incident.description && (
               <>
                 <Separator />
@@ -127,6 +163,79 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
             )}
           </CardContent>
         </Card>
+
+        {csvData && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Shield className="w-5 h-5" />
+                Información de Seguridad
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Oficial de Recursos:</span>
+                <Badge variant={csvData.resource_officer ? "default" : "secondary"}>
+                  {csvData.resource_officer ? "Presente" : "No presente"}
+                </Badge>
+              </div>
+              {csvData.weapon && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Arma utilizada:</span>
+                  <span className="text-sm font-medium">{csvData.weapon}</span>
+                </div>
+              )}
+              {csvData.weapon_source && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Origen del arma:</span>
+                  <span className="text-sm">{csvData.weapon_source}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {csvData && (csvData.age_shooter1 || csvData.gender_shooter1) && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Información del Agresor</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {csvData.age_shooter1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Edad:</span>
+                  <span className="text-sm font-medium">{csvData.age_shooter1} años</span>
+                </div>
+              )}
+              {csvData.gender_shooter1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Género:</span>
+                  <span className="text-sm">{csvData.gender_shooter1}</span>
+                </div>
+              )}
+              {csvData.race_ethnicity_shooter1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Etnia:</span>
+                  <span className="text-sm">{csvData.race_ethnicity_shooter1}</span>
+                </div>
+              )}
+              {csvData.shooter_relationship1 && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Relación:</span>
+                  <span className="text-sm">{csvData.shooter_relationship1}</span>
+                </div>
+              )}
+              {csvData.shooter_deceased1 !== undefined && (
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">Estado:</span>
+                  <Badge variant={csvData.shooter_deceased1 ? "destructive" : "default"}>
+                    {csvData.shooter_deceased1 ? "Fallecido" : "Vivo"}
+                  </Badge>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Source Information */}
         <Card>
@@ -160,6 +269,12 @@ export function IncidentDetailPanel({ incident, onClose }: IncidentDetailPanelPr
                 <div className="font-mono">{incident.longitude.toFixed(6)}</div>
               </div>
             </div>
+            {csvData && (
+              <div className="mt-3 space-y-1">
+                {csvData.county && <div className="text-xs text-muted-foreground">Condado: {csvData.county}</div>}
+                {csvData.ulocale && <div className="text-xs text-muted-foreground">Ubicación: {csvData.ulocale}</div>}
+              </div>
+            )}
           </CardContent>
         </Card>
 
