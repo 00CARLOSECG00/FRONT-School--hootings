@@ -1,10 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { AlertTriangle, Shield, Users, Calendar, MapPin, BarChart3 } from "lucide-react"
+import { AlertTriangle, Shield, Users, Calendar, MapPin, BarChart3, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { ReportIncidentModal } from "@/components/report-incident-modal"
 import Link from "next/link"
 
 export default function HomePage() {
@@ -86,9 +87,12 @@ export default function HomePage() {
               <Link href="/dashboard" className="text-sm font-medium hover:text-primary transition-colors">
                 Dashboard
               </Link>
-              <Link href="/methodology" className="text-sm font-medium hover:text-primary transition-colors">
-                Metodología
-              </Link>
+              <ReportIncidentModal>
+                <Button variant="ghost" size="sm" className="text-sm font-medium">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Reportar
+                </Button>
+              </ReportIncidentModal>
               <Link href="/resources" className="text-sm font-medium hover:text-primary transition-colors">
                 Recursos
               </Link>
@@ -113,9 +117,12 @@ export default function HomePage() {
                 Explorar Dashboard
               </Link>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <Link href="/methodology">Ver Metodología</Link>
-            </Button>
+            <ReportIncidentModal>
+              <Button variant="outline" size="lg">
+                <Plus className="w-5 h-5 mr-2" />
+                Reportar Incidente
+              </Button>
+            </ReportIncidentModal>
           </div>
         </section>
 
@@ -233,11 +240,6 @@ export default function HomePage() {
             <div>
               <h4 className="font-semibold mb-4">Recursos</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <Link href="/methodology" className="hover:text-primary transition-colors">
-                    Metodología
-                  </Link>
-                </li>
                 <li>
                   <Link href="/resources" className="hover:text-primary transition-colors">
                     Recursos de Apoyo
