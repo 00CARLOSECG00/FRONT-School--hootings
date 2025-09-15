@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import type { IncidentData } from "@/lib/types"
-import { loadIncidentsFromCSV } from "@/lib/csv-loader"
+import { useState, useMemo } from "react"
+import { convertToDisplayFormat, type IncidentData, type Filters } from "@/lib/types"
+import { useIncidents } from "@/lib/hooks/use-incidents"
 import { MapView } from "@/components/map-view"
 import { FilterSidebar } from "@/components/filter-sidebar"
 import { IncidentDetailPanel } from "@/components/incident-detail-panel"
@@ -16,43 +16,27 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Map, BarChart3, Table, Filter, Plus, AlertTriangle, Users, MapPin, TrendingUp, GitCompare } from "lucide-react"
 
 export default function DashboardPage() {
-  const [incidents, setIncidents] = useState<IncidentData[]>([])
-  const [filteredIncidents, setFilteredIncidents] = useState<IncidentData[]>([])
   const [selectedIncident, setSelectedIncident] = useState<IncidentData | null>(null)
   const [mapMode, setMapMode] = useState<"markers" | "heatmap">("markers")
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [filters, setFilters] = useState<Filters>({})
 
-  // Load incidents data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setIsLoading(true)
-        const data = await loadIncidentsFromCSV()
-        setIncidents(data)
-        setFilteredIncidents(data)
-        setError(null)
-      } catch (err) {
-        console.error("Error loading incidents:", err)
-        setError("Error al cargar los datos de incidentes")
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const { data: rawIncidents, error, isLoading } = useIncidents(filters)
 
-    loadData()
-  }, [])
+  const incidents = useMemo(() => {
+    if (!rawIncidents) return []
+    return rawIncidents.map(convertToDisplayFormat)
+  }, [rawIncidents])
 
   // Calculate summary statistics
-  const totalIncidents = filteredIncidents.length
-  const totalAffected = filteredIncidents.reduce((sum, incident) => sum + incident.affectedCount, 0)
-  const criticalIncidents = filteredIncidents.filter((i) => i.severity === "critical").length
-  const uniqueStates = new Set(filteredIncidents.map((i) => i.state)).size
+  const totalIncidents = incidents.length
+  const totalAffected = incidents.reduce((sum, incident) => sum + incident.affectedCount, 0)
+  const criticalIncidents = incidents.filter((i) => i.severity === "critical").length
+  const uniqueStates = new Set(incidents.map((i) => i.state)).size
 
   // Recent incidents (last 30 days)
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-  const recentIncidents = filteredIncidents.filter((i) => new Date(i.date) >= thirtyDaysAgo).length
+  const recentIncidents = incidents.filter((i) => new Date(i.date) >= thirtyDaysAgo).length
 
   if (isLoading) {
     return (
@@ -71,7 +55,10 @@ export default function DashboardPage() {
         <div className="text-center">
           <AlertTriangle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h2 className="text-xl font-semibold mb-2">Error al cargar datos</h2>
-          <p className="text-muted-foreground">{error}</p>
+          <p className="text-muted-foreground">{error instanceof Error ? error.message : "Error desconocido"}</p>
+          <p className="text-xs text-muted-foreground mt-2">
+            Verifica que el backend esté ejecutándose en {process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}
+          </p>
         </div>
       </div>
     )
@@ -172,12 +159,10 @@ export default function DashboardPage() {
                   <Filter className="w-4 h-4" />
                   Filtros
                 </CardTitle>
-                <CardDescription>
-                  {filteredIncidents.length} de {incidents.length} incidentes mostrados
-                </CardDescription>
+                <CardDescription>{incidents.length} incidentes mostrados</CardDescription>
               </CardHeader>
               <CardContent className="p-0">
-                <FilterSidebar incidents={incidents} onFilterChange={setFilteredIncidents} />
+                <FilterSidebar filters={filters} onFiltersChange={setFilters} />
               </CardContent>
             </Card>
           </div>
@@ -235,10 +220,11 @@ export default function DashboardPage() {
                   <CardContent className="p-0">
                     <div className="h-[600px] relative">
                       <MapView
-                        incidents={filteredIncidents}
+                        incidents={incidents}
                         mode={mapMode}
                         onIncidentSelect={setSelectedIncident}
                         selectedIncident={selectedIncident}
+                        filters={filters}
                       />
                     </div>
                   </CardContent>
@@ -246,15 +232,15 @@ export default function DashboardPage() {
               </TabsContent>
 
               <TabsContent value="analytics">
-                <AnalyticsDashboard incidents={filteredIncidents} />
+                <AnalyticsDashboard incidents={incidents} filters={filters} />
               </TabsContent>
 
               <TabsContent value="table">
-                <DataTable incidents={filteredIncidents} onIncidentSelect={setSelectedIncident} />
+                <DataTable incidents={incidents} onIncidentSelect={setSelectedIncident} />
               </TabsContent>
 
               <TabsContent value="comparison">
-                <StateComparison incidents={filteredIncidents} />
+                <StateComparison incidents={incidents} />
               </TabsContent>
             </Tabs>
           </div>

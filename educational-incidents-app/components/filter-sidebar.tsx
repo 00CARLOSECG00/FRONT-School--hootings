@@ -1,136 +1,87 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { IncidentData } from "@/lib/types"
+import type { Filters } from "@/lib/types"
+import { useLookups } from "@/lib/hooks/use-incidents"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, MapPin, School, AlertTriangle, RotateCcw } from "lucide-react"
+import { CalendarDays, MapPin, School, AlertTriangle, RotateCcw, Shield } from "lucide-react"
 
 interface FilterSidebarProps {
-  incidents: IncidentData[]
-  onFilterChange: (filteredIncidents: IncidentData[]) => void
+  filters: Filters
+  onFiltersChange: (filters: Filters) => void
 }
 
-interface Filters {
-  dateRange: {
-    start: string
-    end: string
-  }
-  states: string[]
-  institutionTypes: string[]
-  severityLevels: string[]
-  affectedCountRange: {
-    min: number
-    max: number
-  }
-}
+export function FilterSidebar({ filters, onFiltersChange }: FilterSidebarProps) {
+  const { data: lookupData, isLoading } = useLookups()
 
-export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps) {
-  const [filters, setFilters] = useState<Filters>({
-    dateRange: { start: "", end: "" },
-    states: [],
-    institutionTypes: [],
-    severityLevels: [],
-    affectedCountRange: { min: 0, max: 1000 },
-  })
+  const [localFilters, setLocalFilters] = useState<Filters>(filters)
 
-  // Get unique values for filter options
-  const uniqueStates = [...new Set(incidents.map((i) => i.state))].sort()
-  const uniqueInstitutionTypes = [...new Set(incidents.map((i) => i.institutionType))].sort()
-  const severityOptions = ["low", "medium", "high", "critical"]
-
-  // Apply filters
   useEffect(() => {
-    let filtered = incidents
+    const timeoutId = setTimeout(() => {
+      onFiltersChange(localFilters)
+    }, 300)
 
-    // Date range filter
-    if (filters.dateRange.start) {
-      filtered = filtered.filter((i) => new Date(i.date) >= new Date(filters.dateRange.start))
-    }
-    if (filters.dateRange.end) {
-      filtered = filtered.filter((i) => new Date(i.date) <= new Date(filters.dateRange.end))
-    }
-
-    // State filter
-    if (filters.states.length > 0) {
-      filtered = filtered.filter((i) => filters.states.includes(i.state))
-    }
-
-    // Institution type filter
-    if (filters.institutionTypes.length > 0) {
-      filtered = filtered.filter((i) => filters.institutionTypes.includes(i.institutionType))
-    }
-
-    // Severity filter
-    if (filters.severityLevels.length > 0) {
-      filtered = filtered.filter((i) => filters.severityLevels.includes(i.severity))
-    }
-
-    // Affected count filter
-    filtered = filtered.filter(
-      (i) => i.affectedCount >= filters.affectedCountRange.min && i.affectedCount <= filters.affectedCountRange.max,
-    )
-
-    onFilterChange(filtered)
-  }, [filters, incidents, onFilterChange])
+    return () => clearTimeout(timeoutId)
+  }, [localFilters, onFiltersChange])
 
   const handleStateToggle = (state: string) => {
-    setFilters((prev) => ({
+    setLocalFilters((prev) => ({
       ...prev,
-      states: prev.states.includes(state) ? prev.states.filter((s) => s !== state) : [...prev.states, state],
+      state: prev.state?.includes(state) ? prev.state.filter((s) => s !== state) : [...(prev.state || []), state],
     }))
   }
 
-  const handleInstitutionTypeToggle = (type: string) => {
-    setFilters((prev) => ({
+  const handleSchoolTypeToggle = (type: string) => {
+    setLocalFilters((prev) => ({
       ...prev,
-      institutionTypes: prev.institutionTypes.includes(type)
-        ? prev.institutionTypes.filter((t) => t !== type)
-        : [...prev.institutionTypes, type],
+      school_type: prev.school_type?.includes(type)
+        ? prev.school_type.filter((t) => t !== type)
+        : [...(prev.school_type || []), type],
     }))
   }
 
-  const handleSeverityToggle = (severity: string) => {
-    setFilters((prev) => ({
+  const handleShootingTypeToggle = (type: string) => {
+    setLocalFilters((prev) => ({
       ...prev,
-      severityLevels: prev.severityLevels.includes(severity)
-        ? prev.severityLevels.filter((s) => s !== severity)
-        : [...prev.severityLevels, severity],
+      shooting_type: prev.shooting_type?.includes(type)
+        ? prev.shooting_type.filter((t) => t !== type)
+        : [...(prev.shooting_type || []), type],
     }))
   }
 
   const resetFilters = () => {
-    setFilters({
-      dateRange: { start: "", end: "" },
-      states: [],
-      institutionTypes: [],
-      severityLevels: [],
-      affectedCountRange: { min: 0, max: 1000 },
-    })
+    const emptyFilters: Filters = {}
+    setLocalFilters(emptyFilters)
+    onFiltersChange(emptyFilters)
   }
 
-  const getInstitutionTypeLabel = (type: string) => {
-    const labels = {
-      elementary: "Primaria",
-      middle: "Secundaria",
-      high: "Preparatoria",
-      university: "Universidad",
+  const getSchoolTypeLabel = (type: string) => {
+    const labels: Record<string, string> = {
+      Elementary: "Primaria",
+      Middle: "Secundaria",
+      High: "Preparatoria",
+      "K-12": "K-12",
+      Alternative: "Alternativa",
+      Special: "Especial",
     }
-    return labels[type as keyof typeof labels] || type
+    return labels[type] || type
   }
 
-  const getSeverityLabel = (severity: string) => {
-    const labels = {
-      low: "Bajo",
-      medium: "Medio",
-      high: "Alto",
-      critical: "Crítico",
-    }
-    return labels[severity as keyof typeof labels] || severity
+  if (isLoading) {
+    return (
+      <div className="h-full overflow-y-auto p-4">
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-muted rounded w-3/4"></div>
+          <div className="h-32 bg-muted rounded"></div>
+          <div className="h-32 bg-muted rounded"></div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -160,11 +111,11 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
             <Input
               id="start-date"
               type="date"
-              value={filters.dateRange.start}
+              value={localFilters.from || ""}
               onChange={(e) =>
-                setFilters((prev) => ({
+                setLocalFilters((prev) => ({
                   ...prev,
-                  dateRange: { ...prev.dateRange, start: e.target.value },
+                  from: e.target.value || undefined,
                 }))
               }
             />
@@ -176,11 +127,11 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
             <Input
               id="end-date"
               type="date"
-              value={filters.dateRange.end}
+              value={localFilters.to || ""}
               onChange={(e) =>
-                setFilters((prev) => ({
+                setLocalFilters((prev) => ({
                   ...prev,
-                  dateRange: { ...prev.dateRange, end: e.target.value },
+                  to: e.target.value || undefined,
                 }))
               }
             />
@@ -193,16 +144,16 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <MapPin className="w-4 h-4" />
-            Estados ({filters.states.length} seleccionados)
+            Estados ({localFilters.state?.length || 0} seleccionados)
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-40 overflow-y-auto">
-            {uniqueStates.map((state) => (
+            {lookupData?.states.map((state) => (
               <div key={state} className="flex items-center space-x-2">
                 <Checkbox
                   id={`state-${state}`}
-                  checked={filters.states.includes(state)}
+                  checked={localFilters.state?.includes(state) || false}
                   onCheckedChange={() => handleStateToggle(state)}
                 />
                 <Label htmlFor={`state-${state}`} className="text-sm font-normal">
@@ -214,36 +165,25 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
         </CardContent>
       </Card>
 
-      {/* Institution Type Filter */}
+      {/* School Type Filter */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <School className="w-4 h-4" />
-            Tipo de Institución
+            Tipo de Escuela
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            {uniqueInstitutionTypes.map((type) => (
+            {lookupData?.school_types.map((type) => (
               <div key={type} className="flex items-center space-x-2">
                 <Checkbox
                   id={`type-${type}`}
-                  checked={filters.institutionTypes.includes(type)}
-                  onCheckedChange={() => handleInstitutionTypeToggle(type)}
+                  checked={localFilters.school_type?.includes(type) || false}
+                  onCheckedChange={() => handleSchoolTypeToggle(type)}
                 />
-                <Label htmlFor={`type-${type}`} className="text-sm font-normal flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      type === "elementary"
-                        ? "bg-green-500"
-                        : type === "middle"
-                          ? "bg-yellow-500"
-                          : type === "high"
-                            ? "bg-orange-500"
-                            : "bg-red-500"
-                    }`}
-                  />
-                  {getInstitutionTypeLabel(type)}
+                <Label htmlFor={`type-${type}`} className="text-sm font-normal">
+                  {getSchoolTypeLabel(type)}
                 </Label>
               </div>
             ))}
@@ -251,36 +191,25 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
         </CardContent>
       </Card>
 
-      {/* Severity Filter */}
+      {/* Shooting Type Filter */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
-            Nivel de Severidad
+            Tipo de Incidente
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {severityOptions.map((severity) => (
-              <div key={severity} className="flex items-center space-x-2">
+          <div className="space-y-2 max-h-32 overflow-y-auto">
+            {lookupData?.shooting_types.map((type) => (
+              <div key={type} className="flex items-center space-x-2">
                 <Checkbox
-                  id={`severity-${severity}`}
-                  checked={filters.severityLevels.includes(severity)}
-                  onCheckedChange={() => handleSeverityToggle(severity)}
+                  id={`shooting-${type}`}
+                  checked={localFilters.shooting_type?.includes(type) || false}
+                  onCheckedChange={() => handleShootingTypeToggle(type)}
                 />
-                <Label htmlFor={`severity-${severity}`} className="text-sm font-normal flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      severity === "low"
-                        ? "bg-green-500"
-                        : severity === "medium"
-                          ? "bg-yellow-500"
-                          : severity === "high"
-                            ? "bg-orange-500"
-                            : "bg-red-500"
-                    }`}
-                  />
-                  {getSeverityLabel(severity)}
+                <Label htmlFor={`shooting-${type}`} className="text-sm font-normal">
+                  {type}
                 </Label>
               </div>
             ))}
@@ -288,64 +217,91 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
         </CardContent>
       </Card>
 
-      {/* Affected Count Range */}
+      {/* Casualty Range Filters */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Número de Afectados</CardTitle>
+          <CardTitle className="text-sm">Víctimas Mortales</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label htmlFor="min-affected" className="text-xs">
+              <Label htmlFor="min-killed" className="text-xs">
                 Mínimo
               </Label>
               <Input
-                id="min-affected"
+                id="min-killed"
                 type="number"
                 min="0"
-                value={filters.affectedCountRange.min}
+                value={localFilters.min_killed || ""}
                 onChange={(e) =>
-                  setFilters((prev) => ({
+                  setLocalFilters((prev) => ({
                     ...prev,
-                    affectedCountRange: { ...prev.affectedCountRange, min: Number.parseInt(e.target.value) || 0 },
+                    min_killed: e.target.value ? Number.parseInt(e.target.value) : undefined,
                   }))
                 }
               />
             </div>
             <div>
-              <Label htmlFor="max-affected" className="text-xs">
+              <Label htmlFor="max-killed" className="text-xs">
                 Máximo
               </Label>
               <Input
-                id="max-affected"
+                id="max-killed"
                 type="number"
                 min="0"
-                value={filters.affectedCountRange.max}
+                value={localFilters.max_killed || ""}
                 onChange={(e) =>
-                  setFilters((prev) => ({
+                  setLocalFilters((prev) => ({
                     ...prev,
-                    affectedCountRange: { ...prev.affectedCountRange, max: Number.parseInt(e.target.value) || 1000 },
+                    max_killed: e.target.value ? Number.parseInt(e.target.value) : undefined,
                   }))
                 }
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Resource Officer Filter */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            Oficial de Seguridad
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="has-resource-officer"
+              checked={localFilters.has_resource_officer || false}
+              onCheckedChange={(checked) =>
+                setLocalFilters((prev) => ({
+                  ...prev,
+                  has_resource_officer: checked ? true : undefined,
+                }))
+              }
+            />
+            <Label htmlFor="has-resource-officer" className="text-sm font-normal">
+              Solo escuelas con oficial de seguridad
+            </Label>
           </div>
         </CardContent>
       </Card>
 
       {/* Active Filters Summary */}
-      {(filters.states.length > 0 || filters.institutionTypes.length > 0 || filters.severityLevels.length > 0) && (
+      {(localFilters.state?.length || localFilters.school_type?.length || localFilters.shooting_type?.length) && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Filtros Activos</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {filters.states.length > 0 && (
+              {localFilters.state && localFilters.state.length > 0 && (
                 <div>
                   <Label className="text-xs text-muted-foreground">Estados:</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {filters.states.map((state) => (
+                    {localFilters.state.map((state) => (
                       <Badge key={state} variant="secondary" className="text-xs">
                         {state}
                       </Badge>
@@ -353,25 +309,25 @@ export function FilterSidebar({ incidents, onFilterChange }: FilterSidebarProps)
                   </div>
                 </div>
               )}
-              {filters.institutionTypes.length > 0 && (
+              {localFilters.school_type && localFilters.school_type.length > 0 && (
                 <div>
                   <Label className="text-xs text-muted-foreground">Tipos:</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {filters.institutionTypes.map((type) => (
+                    {localFilters.school_type.map((type) => (
                       <Badge key={type} variant="secondary" className="text-xs">
-                        {getInstitutionTypeLabel(type)}
+                        {getSchoolTypeLabel(type)}
                       </Badge>
                     ))}
                   </div>
                 </div>
               )}
-              {filters.severityLevels.length > 0 && (
+              {localFilters.shooting_type && localFilters.shooting_type.length > 0 && (
                 <div>
-                  <Label className="text-xs text-muted-foreground">Severidad:</Label>
+                  <Label className="text-xs text-muted-foreground">Incidentes:</Label>
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {filters.severityLevels.map((severity) => (
-                      <Badge key={severity} variant="secondary" className="text-xs">
-                        {getSeverityLabel(severity)}
+                    {localFilters.shooting_type.map((type) => (
+                      <Badge key={type} variant="secondary" className="text-xs">
+                        {type}
                       </Badge>
                     ))}
                   </div>

@@ -112,3 +112,82 @@ export interface IncidentData {
   description?: string
   csvData?: SchoolIncidentData // Optional reference to original CSV data
 }
+
+export interface District {
+  id: string
+  name: string
+  state: string
+  county: string
+  nces_district_id: string
+}
+
+export interface School {
+  id: string
+  name: string
+  district_id: string
+  nces_school_id: string
+  school_type: string
+  enrollment: number
+  low_grade: string
+  high_grade: string
+  city: string
+  state: string
+  county: string
+  lat: number
+  long: number
+}
+
+export interface Shooter {
+  id: string
+  incident_uid: string
+  age?: number
+  gender?: string
+  race_ethnicity?: string
+  relationship?: string
+  deceased?: boolean
+  deceased_notes?: string
+  weapon?: string
+  weapon_source?: string
+}
+
+export interface Filters {
+  from?: string
+  to?: string
+  state?: string[]
+  district_id?: string[]
+  school_type?: string[]
+  min_killed?: number
+  max_killed?: number
+  min_injured?: number
+  max_injured?: number
+  shooting_type?: string[]
+  has_resource_officer?: boolean
+}
+
+export interface TimePoint {
+  period: string
+  incidents: number
+  killed: number
+  injured: number
+}
+
+export interface StateAgg {
+  state: string
+  incidents: number
+  killed: number
+  injured: number
+}
+
+export interface GridCell {
+  geohash6: string
+  incidents: number
+  lat: number
+  lng: number
+}
+
+export interface LookupData {
+  states: string[]
+  school_types: string[]
+  shooting_types: string[]
+  districts: District[]
+}

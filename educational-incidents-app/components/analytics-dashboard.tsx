@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import type { IncidentData } from "@/lib/types"
+import type { IncidentData, Filters } from "@/lib/types"
+import { useTimeSeries, useStateAggregations } from "@/lib/hooks/use-incidents"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -25,13 +26,28 @@ import { TrendingUp, TrendingDown, Users, AlertTriangle, MapPin } from "lucide-r
 
 interface AnalyticsDashboardProps {
   incidents: IncidentData[]
+  filters?: Filters
 }
 
-export function AnalyticsDashboard({ incidents }: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({ incidents, filters }: AnalyticsDashboardProps) {
   const [selectedTimeframe, setSelectedTimeframe] = useState<"month" | "quarter" | "year">("month")
+
+  const { data: timeSeriesData, isLoading: timeSeriesLoading } = useTimeSeries(filters)
+  const { data: stateAggData, isLoading: stateAggLoading } = useStateAggregations(filters)
 
   // Process data for charts
   const processTemporalData = () => {
+    if (timeSeriesData) {
+      return timeSeriesData.map((point) => ({
+        month: point.period,
+        incidents: point.incidents,
+        affected: point.killed + point.injured,
+        killed: point.killed,
+        injured: point.injured,
+      }))
+    }
+
+    // Fallback to client-side processing if API data not available
     const monthlyData = incidents.reduce(
       (acc, incident) => {
         const date = new Date(incident.date)
@@ -79,6 +95,17 @@ export function AnalyticsDashboard({ incidents }: AnalyticsDashboardProps) {
   }
 
   const processStateData = () => {
+    if (stateAggData) {
+      return stateAggData.slice(0, 10).map((state) => ({
+        state: state.state,
+        incidents: state.incidents,
+        affected: state.killed + state.injured,
+        killed: state.killed,
+        injured: state.injured,
+      }))
+    }
+
+    // Fallback to client-side processing
     const stateData = incidents.reduce(
       (acc, incident) => {
         if (!acc[incident.state]) {
@@ -147,6 +174,33 @@ export function AnalyticsDashboard({ incidents }: AnalyticsDashboardProps) {
       ? ((lastTwoMonths[1].incidents - lastTwoMonths[0].incidents) / lastTwoMonths[0].incidents) * 100
       : 0
 
+  if (timeSeriesLoading || stateAggLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse">
+                  <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
+                  <div className="h-8 bg-muted rounded w-1/2 mb-2"></div>
+                  <div className="h-3 bg-muted rounded w-full"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse">
+              <div className="h-64 bg-muted rounded"></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -188,7 +242,7 @@ export function AnalyticsDashboard({ incidents }: AnalyticsDashboardProps) {
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{criticalIncidents}</div>
             <p className="text-xs text-muted-foreground">
-              {((criticalIncidents / totalIncidents) * 100).toFixed(1)}% del total
+              {totalIncidents > 0 ? ((criticalIncidents / totalIncidents) * 100).toFixed(1) : 0}% del total
             </p>
           </CardContent>
         </Card>
